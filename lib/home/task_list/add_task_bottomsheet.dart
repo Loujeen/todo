@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todo/firebase_Utils.dart';
+import 'package:todo/model/task.dart';
+import 'package:todo/provider/list_provider.dart';
 class AddBottomSheet extends StatefulWidget {
 
 
@@ -11,8 +15,10 @@ class _AddBottomSheetState extends State<AddBottomSheet> {
   var formKey = GlobalKey<FormState>();
 String title = '';
 String description = '';
+late ListProvider listProvider;
   @override
   Widget build(BuildContext context) {
+     listProvider = Provider.of<ListProvider>(context);
     return Container(
       margin: EdgeInsets.all(10),
       child: Column(
@@ -97,7 +103,17 @@ String description = '';
 
   void addTask() {
     if (formKey.currentState?.validate()==true){
-
+      Task task = Task(
+          title: title,
+          description: description,
+          dateTime: selectedDate,
+      isDone: true,
+      );
+     FirbaseUtils.addTaskToFireStore(task).timeout(Duration(seconds: 1),onTimeout: (){
+       print('Task added successfully');
+       listProvider.getAllTasksFromFireStore();
+       Navigator.pop(context);
+     });
     }
   }
 }
